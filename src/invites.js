@@ -66,8 +66,11 @@ module.exports = {
         ':sk_start': 'invite#'
       },
       KeyConditionExpression: 'pk = :pk and begins_with(sk, :sk_start)',
+      ExpressionAttributeNames: {
+        '#s': 'status'
+      },
       ProjectionExpression:
-        'id, workspaceId, createdBy, createdAt, updatedAt, status, email, createdByFullName'
+        'id, workspaceId, createdBy, createdAt, updatedAt, #s, email, createdByFullName'
     };
     return client.query(params).promise();
   }
