@@ -20,7 +20,7 @@ const _InviteSchema = defaultJoi.object().keys({
     })
     .required(),
 
-  createdByFullName: Joi.string()
+  inviterFullName: Joi.string()
     .required()
     .max(70)
 });
