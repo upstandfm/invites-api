@@ -44,12 +44,14 @@ provider:
       'Fn::Select':
         ['1', { 'Fn::Split': ['/', '${state:infra.invitesTableArn}'] }]
     CREATE_WORKSPACE_INVITE_SCOPE: 'create:workspace-invite'
+    READ_WORKSPACE_INVITES_SCOPE: 'read:workspace-invites'
 
   # See: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_actions-resources-contextkeys.html
   iamRoleStatements:
     - Effect: Allow
       Action:
         - dynamodb:PutItem
+        - dynamodb:Query
       Resource: ${state:infra.invitesTableArn}
 
 package:
@@ -67,6 +69,15 @@ functions:
     events:
       - http:
           method: post
+          path: /
+          cors: ${self:custom.cors}
+          authorizer: ${self:custom.authorizer}
+  getWorkspaceInvites:
+    handler: src/handler.getWorkspaceInvites
+    description: Gets all workspace invites
+    events:
+      - http:
+          method: get
           path: /
           cors: ${self:custom.cors}
           authorizer: ${self:custom.authorizer}

@@ -5,13 +5,14 @@ const bodyParser = require('@mooncake-dev/lambda-body-parser');
 const createResHandler = require('@mooncake-dev/lambda-res-handler');
 const { validateAuthorizerData, validateScope } = require('./validators');
 const schema = require('./schema');
-const workspaces = require('./workspaces');
+const invites = require('./invites');
 const handleAndSendError = require('./handle-error');
 
 const {
   CORS_ALLOW_ORIGIN,
   INVITES_TABLE_NAME,
-  CREATE_WORKSPACE_INVITE_SCOPE
+  CREATE_WORKSPACE_INVITE_SCOPE,
+  READ_WORKSPACE_INVITES_SCOPE
 } = process.env;
 
 const defaultHeaders = {
@@ -51,7 +52,7 @@ module.exports.createWorkspaceInvite = async (event, context) => {
 
     const body = bodyParser.json(event.body);
     const inviteData = schema.validateInvite(body);
-    const createdInvite = await workspaces.createInvite(
+    const createdInvite = await invites.createOne(
       documentClient,
       INVITES_TABLE_NAME,
       authorizer.workspaceId,
@@ -60,6 +61,46 @@ module.exports.createWorkspaceInvite = async (event, context) => {
     );
 
     return sendRes.json(201, createdInvite);
+  } catch (err) {
+    return handleAndSendError(context, err, sendRes);
+  }
+};
+
+/**
+ * Lambda APIG proxy integration that gets all workspace invites.
+ *
+ * @param {Object} event - HTTP input
+ * @param {Object} context - AWS lambda context
+ *
+ * @return {Object} HTTP output
+ *
+ * For more info on HTTP input see:
+ * https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+ *
+ * For more info on AWS lambda context see:
+ * https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html
+ *
+ * For more info on HTTP output see:
+ * https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-output-format
+ */
+module.exports.getWorkspaceInvites = async (event, context) => {
+  try {
+    const { authorizer } = event.requestContext;
+
+    validateAuthorizerData(authorizer);
+    validateScope(authorizer.scope, READ_WORKSPACE_INVITES_SCOPE);
+
+    const invitesData = await invites.getAll(
+      documentClient,
+      INVITES_TABLE_NAME,
+      authorizer.workspaceId
+    );
+
+    const resData = {
+      items: invitesData.Items
+    };
+
+    return sendRes.json(200, resData);
   } catch (err) {
     return handleAndSendError(context, err, sendRes);
   }

@@ -17,7 +17,7 @@ module.exports = {
    * For SDK documentation see:
    * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
    */
-  createInvite(client, tableName, workspaceId, createdByUserId, inviteData) {
+  createOne(client, tableName, workspaceId, createdByUserId, inviteData) {
     const now = new Date().toISOString();
     const insertData = {
       ...inviteData,
@@ -44,5 +44,31 @@ module.exports = {
       .then(() => {
         return insertData;
       });
+  },
+
+  /**
+   * Get all workspace invites.
+   *
+   * @param {Object} client - DynamoDB document client
+   * @param {String} tableName
+   * @param {String} workspaceId
+   *
+   * @return {Promise} Resolves with DynamoDB data
+   *
+   * For SDK documentation see:
+   * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property
+   */
+  getAll(client, tableName, workspaceId) {
+    const params = {
+      TableName: tableName,
+      ExpressionAttributeValues: {
+        ':pk': `workspace#${workspaceId}`,
+        ':sk_start': 'invite#'
+      },
+      KeyConditionExpression: 'pk = :pk and begins_with(sk, :sk_start)',
+      ProjectionExpression:
+        'id, workspaceId, createdBy, createdAt, updatedAt, status, email, createdByFullName'
+    };
+    return client.query(params).promise();
   }
 };
