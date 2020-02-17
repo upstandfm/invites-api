@@ -31,6 +31,14 @@ module.exports = {
 
     const params = {
       TableName: tableName,
+
+      // Prevent replacing an item
+      // The write ONLY succeeds when the condition expression evaluates to
+      // "true"
+      // For more info see:
+      // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html#Expressions.ConditionExpressions.PreventingOverwrites
+      ConditionExpression: 'attribute_not_exists(id)',
+
       Item: {
         pk: `workspace#${workspaceId}`,
         sk: `invite#${inviteData.email}`,
@@ -43,6 +51,17 @@ module.exports = {
       .promise()
       .then(() => {
         return insertData;
+      })
+      .catch(err => {
+        if (err.code === 'ConditionalCheckFailedException') {
+          const duplicateErr = new Error(
+            'Invite for this email already exists'
+          );
+          duplicateErr.statusCode = 400;
+          throw duplicateErr;
+        }
+
+        throw err;
       });
   },
 
