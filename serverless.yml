@@ -1,0 +1,71 @@
+org: upstandfm
+app: api
+service: invites-api
+
+plugins:
+  - serverless-domain-manager
+
+custom:
+  customDomain:
+    domainName: api.upstand.fm
+    basePath: invites
+    stage: ${opt:stage, 'prod'}
+    createRoute53Record: false
+  cors:
+    origin: '*'
+  authorizer:
+    arn: ${secrets:AUTH0_AUTHORIZER_ARN}
+    resultTtlInSeconds: 60
+    identitySource: method.request.header.Authorization
+    # Note that Bearer must be capitalized
+    identityValidationExpression: '^Bearer [-0-9a-zA-z\.]*$'
+    type: token
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${opt:stage, 'prod'}
+  region: ${opt:region, 'eu-central-1'}
+  cfnRole: ${secrets:CFN_ROLE_ARN}
+  memorySize: 128
+  timeout: 3
+  deploymentBucket:
+    name: upstandfm-deployments
+    serverSideEncryption: AES256
+  environment:
+    # Reuse TCP connection to reduce request latency
+    # For more info see:
+    # https://github.com/aws/aws-sdk-js/blob/master/CHANGELOG.md#24630
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    CORS_ALLOW_ORIGIN: ${self:custom.cors.origin}
+
+package:
+  exclude:
+    - ./*
+    - ./**/*.spec.js
+  include:
+    - node_modules
+    - src
+
+functions:
+
+resources:
+  Resources:
+    GatewayResponseDefault4XX:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+    GatewayResponseDefault5XX:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_5XX
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
