@@ -46,6 +46,8 @@ module.exports = function createStreamSubscriber(publisher, options = {}) {
     /**
      * Publish records in a change stream.
      *
+     * For now only "INSERT" and "REMOVE" events are published.
+     *
      * @param {Object} event - DynamoDB stream event
      * @param {Object} context - AWS Lambda context
      *

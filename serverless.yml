@@ -45,6 +45,8 @@ provider:
         ['1', { 'Fn::Split': ['/', '${state:infra.invitesTableArn}'] }]
     CREATE_WORKSPACE_INVITE_SCOPE: 'create:workspace-invite'
     READ_WORKSPACE_INVITES_SCOPE: 'read:workspace-invites'
+    NEW_INVITE_SNS_ARN: ${state:infra.newInviteTopicArn}
+    DELETE_INVITE_SNS_ARN: ${state:infra.deleteInviteTopicArn}
 
   # See: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_actions-resources-contextkeys.html
   iamRoleStatements:
@@ -53,6 +55,21 @@ provider:
         - dynamodb:PutItem
         - dynamodb:Query
       Resource: ${state:infra.invitesTableArn}
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeStream
+        - dynamodb:GetRecords
+        - dynamodb:GetShardIterator
+        - dynamodb:ListStreams
+      Resource: ${state:infra.invitesTableStreamArn}
+    - Effect: Allow
+      Action:
+        - sns:Publish
+      Resource: ${state:infra.newInviteTopicArn}
+    - Effect: Allow
+      Action:
+        - sns:Publish
+      Resource: ${state:infra.deleteInviteTopicArn}
 
 package:
   exclude:
@@ -81,6 +98,13 @@ functions:
           path: /
           cors: ${self:custom.cors}
           authorizer: ${self:custom.authorizer}
+  processInvitesStream:
+    handler: src/handler.processInvitesStream
+    description: Publishes the change stream
+    events:
+      - stream:
+          type: dynamodb
+          arn: ${state:infra.invitesTableStreamArn}
 
 resources:
   Resources:
