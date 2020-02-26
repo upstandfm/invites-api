@@ -31,7 +31,10 @@ function _validate(data, schema) {
   // For Joi "error" see:
   // https://github.com/hapijs/joi/blob/master/API.md#validationerror
   if (joiErr) {
-    throw joiErr;
+    const err = new Error('Invalid request data');
+    err.statusCode = 400;
+    err.details = joiErr.details.map(e => e.message);
+    throw err;
   }
 
   return value;
