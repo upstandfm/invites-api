@@ -4,12 +4,9 @@ const DynamoDB = require('aws-sdk/clients/dynamodb');
 const SNS = require('aws-sdk/clients/sns');
 const bodyParser = require('@mooncake-dev/lambda-body-parser');
 const createResHandler = require('@mooncake-dev/lambda-res-handler');
+const { createStorage, createInvites, createController } = require('./http');
 const createPublisher = require('./publisher');
 const createStreamSubscriber = require('./stream-subscriber');
-const { validateAuthorizerData, validateScope } = require('./validators');
-const schema = require('./schema');
-const invites = require('./invites');
-const handleAndSendError = require('./handle-error');
 const { captureError } = require('./utils');
 
 const {
@@ -21,15 +18,19 @@ const {
   DELETE_INVITE_SNS_ARN
 } = process.env;
 
-const defaultHeaders = {
-  'Access-Control-Allow-Origin': CORS_ALLOW_ORIGIN
-};
-const sendRes = createResHandler(defaultHeaders);
-
 // For more info see:
 // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#constructor-property
 const documentClient = new DynamoDB.DocumentClient({
   convertEmptyValues: true
+});
+const storage = createStorage(documentClient, INVITES_TABLE_NAME);
+const invites = createInvites(storage);
+const defaultHeaders = {
+  'Access-Control-Allow-Origin': CORS_ALLOW_ORIGIN
+};
+const controller = createController(invites, {
+  bodyParser,
+  res: createResHandler(defaultHeaders)
 });
 
 const sns = new SNS();
@@ -66,24 +67,15 @@ const streamSubscriber = createStreamSubscriber(publisher, {
  */
 module.exports.createWorkspaceInvite = async (event, context) => {
   try {
-    const { authorizer } = event.requestContext;
-
-    validateAuthorizerData(authorizer);
-    validateScope(authorizer.scope, CREATE_WORKSPACE_INVITE_SCOPE);
-
-    const body = bodyParser.json(event.body);
-    const inviteData = schema.validateInvite(body);
-    const createdInvite = await invites.createOne(
-      documentClient,
-      INVITES_TABLE_NAME,
-      authorizer.workspaceId,
-      authorizer.userId,
-      inviteData
+    const res = await controller.createWorkspaceInvite(
+      event,
+      context,
+      CREATE_WORKSPACE_INVITE_SCOPE
     );
-
-    return sendRes.json(201, createdInvite);
+    return res;
   } catch (err) {
-    return handleAndSendError(context, err, sendRes);
+    console.log('Failed to create workspace invite: ', err);
+    captureError(context, err);
   }
 };
 
@@ -106,24 +98,15 @@ module.exports.createWorkspaceInvite = async (event, context) => {
  */
 module.exports.getWorkspaceInvites = async (event, context) => {
   try {
-    const { authorizer } = event.requestContext;
-
-    validateAuthorizerData(authorizer);
-    validateScope(authorizer.scope, READ_WORKSPACE_INVITES_SCOPE);
-
-    const invitesData = await invites.getAll(
-      documentClient,
-      INVITES_TABLE_NAME,
-      authorizer.workspaceId
+    const res = await controller.getWorkspaceInvites(
+      event,
+      context,
+      READ_WORKSPACE_INVITES_SCOPE
     );
-
-    const resData = {
-      items: invitesData.Items
-    };
-
-    return sendRes.json(200, resData);
+    return res;
   } catch (err) {
-    return handleAndSendError(context, err, sendRes);
+    console.log('Failed to get workspace invites: ', err);
+    captureError(context, err);
   }
 };
 
