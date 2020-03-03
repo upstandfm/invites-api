@@ -4,7 +4,11 @@ const DynamoDB = require('aws-sdk/clients/dynamodb');
 const SNS = require('aws-sdk/clients/sns');
 const bodyParser = require('@mooncake-dev/lambda-body-parser');
 const createResHandler = require('@mooncake-dev/lambda-res-handler');
-const { createStorage, createInvites, createController } = require('./http');
+const {
+  createStorageService,
+  createInviteService,
+  createController
+} = require('./http');
 const createPublisher = require('./publisher');
 const createStreamSubscriber = require('./stream-subscriber');
 const { captureError } = require('./utils');
@@ -23,12 +27,12 @@ const {
 const documentClient = new DynamoDB.DocumentClient({
   convertEmptyValues: true
 });
-const storage = createStorage(documentClient, INVITES_TABLE_NAME);
-const invites = createInvites(storage);
+const storageService = createStorageService(documentClient, INVITES_TABLE_NAME);
+const inviteService = createInviteService(storageService);
 const defaultHeaders = {
   'Access-Control-Allow-Origin': CORS_ALLOW_ORIGIN
 };
-const controller = createController(invites, {
+const controller = createController(inviteService, {
   bodyParser,
   res: createResHandler(defaultHeaders)
 });

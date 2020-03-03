@@ -7,7 +7,7 @@ const schema = require('../schema');
 /**
  * Create a controller to handle HTTP requests.
  *
- * @param {Object} invites - Invites service
+ * @param {Object} invite - Invite service
  * @param {Object} options
  *
  * @param {Object} options.bodyParser
@@ -18,9 +18,9 @@ const schema = require('../schema');
  *
  * @return {Object} Controller interface
  */
-module.exports = function createController(invites, options = {}) {
-  if (!invites) {
-    throw new Error('Provide an invites service');
+module.exports = function createController(invite, options = {}) {
+  if (!invite) {
+    throw new Error('Provide an invite service');
   }
 
   const { bodyParser = {}, res = {} } = options;
@@ -53,7 +53,7 @@ module.exports = function createController(invites, options = {}) {
 
         const body = bodyParser.json(event.body);
         const data = schema.validateInvite(body);
-        const item = await invites.create(
+        const item = await invite.create(
           authorizer.workspaceId,
           authorizer.userId,
           data
@@ -89,7 +89,7 @@ module.exports = function createController(invites, options = {}) {
         validateAuthorizerData(authorizer);
         validateScope(authorizer.scope, requiredScope);
 
-        const items = await invites.getAll(authorizer.workspaceId);
+        const items = await invite.getAll(authorizer.workspaceId);
         const resData = {
           items
         };

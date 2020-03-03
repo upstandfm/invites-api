@@ -1,36 +1,36 @@
 'use strict';
 
-const createInvites = require('./invites');
+const createInviteService = require('.');
 
 describe('Invites service', () => {
-  describe('createInvites(db)', () => {
+  describe('createInviteService(db)', () => {
     it('throws without storage service', () => {
       expect(() => {
-        createInvites();
+        createInviteService();
       }).toThrowError(/^Provide a storage service$/);
     });
 
-    it('creates invites service', () => {
+    it('creates invite service', () => {
       expect(() => {
         const fakeStorage = {};
-        createInvites(fakeStorage);
+        createInviteService(fakeStorage);
       }).not.toThrowError();
     });
   });
 
-  describe('invites.create(workspaceId, userId, data)', () => {
+  describe('inviteService.create(workspaceId, userId, data)', () => {
     it('calls storage service with item', async () => {
       const fakeStorage = {
         insertWorkspaceInvite: jest.fn(() => Promise.resolve())
       };
-      const invites = createInvites(fakeStorage);
+      const inviteService = createInviteService(fakeStorage);
       const workspaceId = '1zxE3D2';
       const userId = 'user|5656ea6a6f64124df123fd';
       const data = {
         email: 'test.user@test.com',
         inviterFullName: 'Test Inviter'
       };
-      await invites.create(workspaceId, userId, data);
+      await inviteService.create(workspaceId, userId, data);
 
       // Check if we call the storage service
       expect(fakeStorage.insertWorkspaceInvite.mock.calls.length).toEqual(1);
@@ -52,14 +52,14 @@ describe('Invites service', () => {
     });
   });
 
-  describe('invites.getAll(workspaceId)', () => {
+  describe('inviteService.getAll(workspaceId)', () => {
     it('calls storage service with workspace ID', async () => {
       const fakeStorage = {
         queryWorkspaceInvites: jest.fn(() => Promise.resolve())
       };
-      const invites = createInvites(fakeStorage);
+      const inviteService = createInviteService(fakeStorage);
       const workspaceId = '1zxE3D2';
-      await invites.getAll(workspaceId);
+      await inviteService.getAll(workspaceId);
 
       // Check if we call the storage service
       expect(fakeStorage.queryWorkspaceInvites.mock.calls.length).toEqual(1);

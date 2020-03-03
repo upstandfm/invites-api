@@ -3,16 +3,16 @@
 const createController = require('.');
 
 describe('Controller', () => {
-  describe('createController(invites, options)', () => {
-    it('throws without an invites service', () => {
+  describe('createController(invite, options)', () => {
+    it('throws without an invite service', () => {
       expect(() => {
         createController();
-      }).toThrowError(/^Provide an invites service$/);
+      }).toThrowError(/^Provide an invite service$/);
     });
 
     it('throws without JSON body parser', () => {
       expect(() => {
-        const fakeInvitesService = {};
+        const fakeInviteService = {};
         const options = {
           bodyParser: {
             json: undefined
@@ -21,13 +21,13 @@ describe('Controller', () => {
             json: () => undefined
           }
         };
-        createController(fakeInvitesService, options);
+        createController(fakeInviteService, options);
       }).toThrowError(/^Provide a body parser function to parse JSON strings$/);
     });
 
     it('throws when JSON body parser is not a function', () => {
       expect(() => {
-        const fakeInvitesService = {};
+        const fakeInviteService = {};
         const options = {
           bodyParser: {
             json: 1
@@ -36,13 +36,13 @@ describe('Controller', () => {
             json: () => undefined
           }
         };
-        createController(fakeInvitesService, options);
+        createController(fakeInviteService, options);
       }).toThrowError(/^Provide a body parser function to parse JSON strings$/);
     });
 
     it('throws without JSON response handler', () => {
       expect(() => {
-        const fakeInvitesService = {};
+        const fakeInviteService = {};
         const options = {
           bodyParser: {
             json: () => undefined
@@ -51,13 +51,13 @@ describe('Controller', () => {
             json: undefined
           }
         };
-        createController(fakeInvitesService, options);
+        createController(fakeInviteService, options);
       }).toThrowError(/^Provide a function to send JSON responses$/);
     });
 
     it('throws when JSON response handler is not a function', () => {
       expect(() => {
-        const fakeInvitesService = {};
+        const fakeInviteService = {};
         const options = {
           bodyParser: {
             json: () => undefined
@@ -66,13 +66,13 @@ describe('Controller', () => {
             json: 'hello'
           }
         };
-        createController(fakeInvitesService, options);
+        createController(fakeInviteService, options);
       }).toThrowError(/^Provide a function to send JSON responses$/);
     });
 
     it('creates controller', () => {
       expect(() => {
-        const fakeInvitesService = {};
+        const fakeInviteService = {};
         const options = {
           bodyParser: {
             json: () => undefined
@@ -81,7 +81,7 @@ describe('Controller', () => {
             json: () => undefined
           }
         };
-        createController(fakeInvitesService, options);
+        createController(fakeInviteService, options);
       }).not.toThrowError();
     });
   });

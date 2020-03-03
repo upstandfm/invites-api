@@ -20,7 +20,7 @@ const fakeInvite = {
   status: 'pending'
 };
 
-const fakeInvitesService = {
+const fakeInviteService = {
   create: () => Promise.resolve(fakeInvite)
 };
 
@@ -29,7 +29,7 @@ const options = {
   res: createResHandler()
 };
 
-const controller = createController(fakeInvitesService, options);
+const controller = createController(fakeInviteService, options);
 
 const fakeEvent = {
   resource: '',

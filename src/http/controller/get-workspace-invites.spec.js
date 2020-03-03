@@ -30,7 +30,7 @@ const fakeInvites = [
   }
 ];
 
-const fakeInvitesService = {
+const fakeInviteService = {
   getAll: () => Promise.resolve(fakeInvites)
 };
 
@@ -39,7 +39,7 @@ const options = {
   res: createResHandler()
 };
 
-const controller = createController(fakeInvitesService, options);
+const controller = createController(fakeInviteService, options);
 
 const fakeEvent = {
   resource: '',

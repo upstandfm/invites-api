@@ -1,13 +1,13 @@
 'use strict';
 
 /**
- * Create Invites service.
+ * Create invite service.
  *
  * @param {Object} db - Storage service
  *
- * @return {Object} Invites service interface
+ * @return {Object} Invite service interface
  */
-module.exports = function createInvites(db) {
+module.exports = function createInviteService(db) {
   if (!db) {
     throw new Error('Provide a storage service');
   }

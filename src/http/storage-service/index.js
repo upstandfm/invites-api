@@ -10,7 +10,7 @@ const shortid = require('shortid');
  *
  * @return {Object} Storage service interface
  */
-module.exports = function createStorage(client, tableName) {
+module.exports = function createStorageService(client, tableName) {
   if (!client) {
     throw new Error('Provide a storage client');
   }

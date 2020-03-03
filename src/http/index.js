@@ -1,11 +1,11 @@
 'use strict';
 
-const createStorage = require('./storage');
-const createInvites = require('./invites');
+const createStorageService = require('./storage-service');
+const createInviteService = require('./invite-service');
 const createController = require('./controller');
 
 module.exports = {
-  createStorage,
-  createInvites,
+  createStorageService,
+  createInviteService,
   createController
 };

@@ -1,19 +1,19 @@
 'use strict';
 
-const createStorage = require('./storage');
+const createStorageService = require('.');
 
 describe('Storage service', () => {
-  describe('createStorage(client, tableName)', () => {
+  describe('createStorageService(client, tableName)', () => {
     it('throws without a client', () => {
       expect(() => {
-        createStorage();
+        createStorageService();
       }).toThrowError(/^Provide a storage client$/);
     });
 
     it('throws without a table name', () => {
       expect(() => {
         const fakeClient = {};
-        createStorage(fakeClient);
+        createStorageService(fakeClient);
       }).toThrowError(/^Provide a table name$/);
     });
 
@@ -21,7 +21,7 @@ describe('Storage service', () => {
       expect(() => {
         const fakeClient = {};
         const fakeTable = 'Fake';
-        createStorage(fakeClient, fakeTable);
+        createStorageService(fakeClient, fakeTable);
       }).not.toThrowError();
     });
   });
