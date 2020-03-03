@@ -52,6 +52,46 @@ describe('Invites service', () => {
     });
   });
 
+  describe('inviteService.updateStatus(data)', () => {
+    it('calls storage service with workspace ID, email and item', async () => {
+      const fakeStorage = {
+        updateWorkspaceInviteStatus: jest.fn(() => Promise.resolve())
+      };
+      const inviteService = createInviteService(fakeStorage);
+      const data = {
+        workspaceId: '1zxE3D2',
+        email: 'test.user@test.com',
+        status: 'pending'
+      };
+      await inviteService.updateStatus(data);
+
+      // Check if we call the storage service
+      expect(fakeStorage.updateWorkspaceInviteStatus.mock.calls.length).toEqual(
+        1
+      );
+
+      // Check if the storage service is called with correct workspace ID
+      const inputWorkspaceId =
+        fakeStorage.updateWorkspaceInviteStatus.mock.calls[0][0];
+      expect(inputWorkspaceId).toEqual(data.workspaceId);
+
+      // Check if the storage service is called with correct email
+      const emailInput =
+        fakeStorage.updateWorkspaceInviteStatus.mock.calls[0][1];
+      expect(emailInput).toEqual(data.email);
+
+      // Check if the storage service is called with correct item data
+      const itemInput =
+        fakeStorage.updateWorkspaceInviteStatus.mock.calls[0][2];
+
+      // ISO date looks like: "2020-02-23T15:27:05.825Z"
+      const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+      expect(itemInput.updatedAt).toEqual(expect.stringMatching(isoDateRegex));
+
+      expect(itemInput.status).toEqual(data.status);
+    });
+  });
+
   describe('inviteService.getAll(workspaceId)', () => {
     it('calls storage service with workspace ID', async () => {
       const fakeStorage = {

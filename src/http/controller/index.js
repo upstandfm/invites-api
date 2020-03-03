@@ -73,6 +73,45 @@ module.exports = function createController(invite, options = {}) {
     },
 
     /**
+     * Update the status of a workspace invite.
+     *
+     * @param {Object} event - Lambda HTTP input
+     * @param {Object} context - Lambda context
+     * @param {String} requiredScope - The scope a consumer must have to perform this action
+     *
+     * @return {Promise} Resolves with HTTP output object
+     *
+     */
+    async updateWorkspaceInviteStatus(event, context, requiredScope) {
+      try {
+        // We don't explicitly validate the authorizer data because this
+        // endpoint may only be called by a "machine client", so we don't have
+        // user-specific information like workspace ID and user ID
+        //
+        // Technically we have a user ID, but in this case its the client ID of
+        // the machine client, and not the user's ID
+        const { authorizer = {} } = event.requestContext;
+
+        validateScope(authorizer.scope, requiredScope);
+
+        const body = bodyParser.json(event.body);
+        const data = schema.validateStatus(body);
+        const item = await invite.updateStatus(data);
+
+        return res.json(200, item);
+      } catch (err) {
+        captureError(context, err);
+
+        const statusCode = err.statusCode || 500;
+        const resData = {
+          message: err.message,
+          details: err.details
+        };
+        return res.json(statusCode, resData);
+      }
+    },
+
+    /**
      * Get all workspace invites.
      *
      * @param {Object} event - Lambda HTTP input

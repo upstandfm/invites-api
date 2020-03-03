@@ -18,6 +18,7 @@ const {
   INVITES_TABLE_NAME,
   CREATE_WORKSPACE_INVITE_SCOPE,
   READ_WORKSPACE_INVITES_SCOPE,
+  UPDATE_WORKSPACE_INVITE_STATUS_SCOPE,
   NEW_INVITE_SNS_ARN,
   DELETE_INVITE_SNS_ARN
 } = process.env;
@@ -79,6 +80,37 @@ module.exports.createWorkspaceInvite = async (event, context) => {
     return res;
   } catch (err) {
     console.log('Failed to create workspace invite: ', err);
+    captureError(context, err);
+  }
+};
+
+/**
+ * Lambda APIG proxy integration that updates the status of a workspace invite.
+ *
+ * @param {Object} event - HTTP input
+ * @param {Object} context - AWS lambda context
+ *
+ * @return {Object} HTTP output
+ *
+ * For more info on HTTP input see:
+ * https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+ *
+ * For more info on AWS lambda context see:
+ * https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html
+ *
+ * For more info on HTTP output see:
+ * https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-output-format
+ */
+module.exports.updateWorkspaceInviteStatus = async (event, context) => {
+  try {
+    const res = await controller.updateWorkspaceInviteStatus(
+      event,
+      context,
+      UPDATE_WORKSPACE_INVITE_STATUS_SCOPE
+    );
+    return res;
+  } catch (err) {
+    console.log('Failed to update workspace invite status: ', err);
     captureError(context, err);
   }
 };

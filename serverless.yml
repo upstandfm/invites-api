@@ -45,6 +45,7 @@ provider:
         ['1', { 'Fn::Split': ['/', '${state:infra.invitesTableArn}'] }]
     CREATE_WORKSPACE_INVITE_SCOPE: 'create:workspace-invite'
     READ_WORKSPACE_INVITES_SCOPE: 'read:workspace-invites'
+    UPDATE_WORKSPACE_INVITE_STATUS_SCOPE: 'update:workspace-invite-status'
     NEW_INVITE_SNS_ARN: ${state:infra.newInviteTopicArn}
     DELETE_INVITE_SNS_ARN: ${state:infra.deleteInviteTopicArn}
 
@@ -53,6 +54,7 @@ provider:
     - Effect: Allow
       Action:
         - dynamodb:PutItem
+        - dynamodb:UpdateItem
         - dynamodb:Query
       Resource: ${state:infra.invitesTableArn}
     - Effect: Allow
@@ -87,6 +89,15 @@ functions:
       - http:
           method: post
           path: /
+          cors: ${self:custom.cors}
+          authorizer: ${self:custom.authorizer}
+  updateWorkspaceInviteStatus:
+    handler: src/handler.updateWorkspaceInviteStatus
+    description: Updates the status of a workspace invite
+    events:
+      - http:
+          method: patch
+          path: /status
           cors: ${self:custom.cors}
           authorizer: ${self:custom.authorizer}
   getWorkspaceInvites:

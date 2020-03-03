@@ -20,6 +20,9 @@ module.exports = function createInviteService(db) {
      * @param {String} userId
      * @param {Object} data
      *
+     * @param {String} data.email
+     * @param {String} data.inviterFullName
+     *
      * @return {Promise} Resolves with created invite
      */
     create(workspaceId, userId, data) {
@@ -34,6 +37,25 @@ module.exports = function createInviteService(db) {
       };
 
       return db.insertWorkspaceInvite(item);
+    },
+
+    /**
+     * Update the status of a workspace invite.
+     *
+     * @param {Object} data
+     * @param {String} data.workspaceId
+     * @param {String} data.email
+     * @param {String} data.status
+     *
+     * @return {Promise} Resolves with updated invite attributes
+     */
+    updateStatus(data) {
+      const item = {
+        updatedAt: new Date().toISOString(),
+        status: data.status
+      };
+
+      return db.updateWorkspaceInviteStatus(data.workspaceId, data.email, item);
     },
 
     /**

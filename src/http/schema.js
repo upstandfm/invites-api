@@ -25,6 +25,25 @@ const _InviteSchema = defaultJoi.object().keys({
     .max(70)
 });
 
+const _StatusSchema = defaultJoi.object().keys({
+  workspaceId: Joi.string().required(),
+
+  email: Joi.string()
+    .email({
+      tlds: {
+        // Disable TLD validation to allow any TLD as valid
+        // For more info see:
+        // https://hapi.dev/family/joi/api/?v=17.1.0#stringemailoptions
+        allow: false
+      }
+    })
+    .required(),
+
+  status: Joi.string()
+    .required()
+    .valid('accepted', 'error')
+});
+
 function _validate(data, schema) {
   const { error: joiErr, value } = schema.validate(data);
 
@@ -43,5 +62,9 @@ function _validate(data, schema) {
 module.exports = {
   validateInvite(data = {}) {
     return _validate(data, _InviteSchema);
+  },
+
+  validateStatus(data = {}) {
+    return _validate(data, _StatusSchema);
   }
 };
