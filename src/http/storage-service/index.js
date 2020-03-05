@@ -158,7 +158,7 @@ module.exports = function createStorageService(client, tableName) {
           '#s': 'status'
         },
         ProjectionExpression:
-          'id, workspaceId, createdBy, createdAt, updatedAt, #s, email, createdByFullName'
+          'id, workspaceId, createdBy, createdAt, updatedAt, #s, email, inviterFullName'
       };
 
       return client
